@@ -1,4 +1,4 @@
 (executable
  (public_name ssearch)
  (name main)
- (libraries str core ssearch mecab))
+ (libraries str core ssearch mecab sqlite3 sha caqti))
