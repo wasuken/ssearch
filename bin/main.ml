@@ -9,8 +9,6 @@ let escape str =
   let r = Str.regexp "[%|'|\"|:|\\*|;|~|\\.|_|$|&|\\(|\\)|\\s|\\|^]" in
   Str.global_replace r "" str
 
-(* DB系 *)
-
 (* SQL生成系 *)
 
 let create_table_sql =
@@ -41,6 +39,8 @@ let generate_where_doc_words_linum word =
   sprintf
     "select d.path,dw.linum,dw.word,dw.linum,d.id,dw.doc_id from docs as d join doc_words as dw on d.id = dw.doc_id where dw.word like '%s';"
     word
+
+(* DB系 *)
 
 let exec_db db sql suc_msg =
   match exec db sql with
@@ -134,7 +134,7 @@ let get_file_line path linum =
   | Some(a) -> a
   | _a -> ""
 
-let matchLineFromIndex query =
+let match_line_from_index query =
   let db = create_db_when_not_exists app_db in
   let sql = generate_where_doc_words_linum query in
   let linum_lst = ref [] in
@@ -156,4 +156,4 @@ let () =
     then multi_file_grep Sys.argv.(2) (List.drop (Array.to_list Sys.argv) 3)
     else
       if (String.compare cmd "search") = 0
-      then matchLineFromIndex (String.lowercase Sys.argv.(2))
+      then match_line_from_index (String.lowercase Sys.argv.(2))

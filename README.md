@@ -2,15 +2,17 @@
 
 ## 次やること
 
-### 転置インデックスによる検索実装
+### パフォーマンスチューニング
 
-* 正規表現はサポートしない。
+#### ファイル読み込み処理
 
-* よくあるクエリ(空白区切りだけサポート)を入力する。
+ead_allしてるので、
 
-#### コマンド一覧
+検索結果が大量にあるときはかなりでかい。
 
-##### index
+### コマンド一覧
+
+#### index
 
 具体的にはdbにファイルと単語の転置インデックスを入れる。
 
@@ -20,12 +22,10 @@
 
 3. DBに保存する。
 
-	1. words(id,name)
+	1. docs(id,path,contents\_hash)
 
-	2. docs(id,path,contents\_hash)
+	2. doc_words(word,doc\_id,linum)
 
-	3. doc_words(word\_id,doc\_id,linum)
-
-##### search
+#### search
 
 検索する。
