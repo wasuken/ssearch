@@ -134,6 +134,21 @@ let get_file_line path linum =
   | Some(a) -> a
   | _a -> ""
 
+let path_lines_tbl = Hashtbl.create
+                       ~growth_allowed:true
+                       ~size:1000
+                       (module String)
+
+let mem_path_line path linum =
+  let line = match Hashtbl.find path_lines_tbl path with
+    | Some(lines) -> List.nth lines linum
+    | _ -> let lines = Core_kernel.In_channel.read_lines path in
+           let _ = Hashtbl.add path_lines_tbl ~key:path ~data:lines in
+           List.nth lines linum
+  in match line with
+     | Some(l) -> l
+     | _ -> ""
+
 let match_line_from_index query =
   let db = create_db_when_not_exists app_db in
   let sql = generate_where_doc_words_linum query in
@@ -143,7 +158,7 @@ let match_line_from_index query =
              sql in
   List.iter
     ~f:(fun (path, linum) ->
-      printf "[%s: %s] %s\n" path linum (get_file_line path (int_of_string linum)))
+      printf "[%s: %s] %s\n" path linum (mem_path_line path (int_of_string linum)))
     !linum_lst;
   let _ = db_close db in
   ()
