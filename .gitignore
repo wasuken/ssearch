@@ -30,3 +30,4 @@ _opam/
 *.sqlite3*
 aozorabunko/
 *.zip
+/index
