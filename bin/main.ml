@@ -10,11 +10,12 @@ let parsing contents =
   let nodes = Mecab.Tagger.sparse_tonode m contents in
   let surfaces = List.map ~f:(fun node ->
                      escape node.surface) nodes in
-  List.map ~f:(fun x -> String.lowercase x)
+  let reg_w = (Pcre.regexp "^\\w+$") in
+  List.map ~f:(fun x -> if Pcre.pmatch ~rex:reg_w x
+                        then String.lowercase x
+                        else x)
     (List.filter
-       ~f:(fun surface ->
-         (String.length surface > 2) &&
-           (Pcre.pmatch ~rex:(Pcre.regexp "^\\w+$") surface))
+       ~f:(fun surface -> String.length surface > 2)
        surfaces)
 
 let spit path contents =
@@ -30,8 +31,28 @@ let if_not_exists_then_mkdir path =
   then Core__Core_unix.mkdir path
 
 let index_slurp word =
-  let index_path = sprintf "%s%s" index_dir_path word in
+  let sha = Sha1.string word in
+  let index_path = sprintf "%s%s" index_dir_path (Sha1.to_hex sha) in
   In_channel.read_lines index_path
+
+let max_line_size = 10000
+
+let rec str_split_size str n =
+  if String.length str <= n
+  then [str;]
+  else (String.slice str 0 n)
+       :: (str_split_size (String.slice str
+                             n
+                             (String.length str))
+             n)
+
+(* The method is counterplan for too long line. *)
+let safe_slurp path =
+  List.concat
+    (List.map (In_channel.read_lines path)
+       ~f:(fun line -> if String.length line > max_line_size
+                       then str_split_size line max_line_size
+                       else [line;]))
 
 let index_spit word =
   let index_path = sprintf "%s%s" index_dir_path word in
@@ -48,7 +69,7 @@ let add_index word linum path =
 
 (* インデックスファイル生成 *)
 let indexing path =
-  let lines = In_channel.read_lines path in
+  let lines = safe_slurp path in
   let linum_words = List.mapi lines
                       ~f:(fun i line -> (i, parsing line)) in
   List.iter
