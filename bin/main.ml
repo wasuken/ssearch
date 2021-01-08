@@ -1,8 +1,5 @@
 open Core_kernel
 
-(* グローバル?変数 *)
-let app_db = "./ssearch.sqlite3"
-
 (* util *)
 let escape str =
   let r = Str.regexp "[%|'|\"|:|\\*|;|~|\\.|_|$|&|\\(|\\)|\\s|\\|^]" in
